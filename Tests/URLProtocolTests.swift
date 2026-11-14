@@ -41,14 +41,21 @@ class ProxyURLProtocol: URLProtocol {
             return configuration
         }()
 
-        let session = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
-
-        return session
+        return URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
     }()
 
     weak var activeTask: URLSessionTask?
 
     // MARK: Class Request Methods
+
+    override class func canInit(with task: URLSessionTask) -> Bool {
+        if let request = task.currentRequest,
+           URLProtocol.property(forKey: PropertyKeys.handledByForwarderURLProtocol, in: request) != nil {
+            return false
+        }
+
+        return true
+    }
 
     override class func canInit(with request: URLRequest) -> Bool {
         if URLProtocol.property(forKey: PropertyKeys.handledByForwarderURLProtocol, in: request) != nil {
@@ -94,15 +101,19 @@ class ProxyURLProtocol: URLProtocol {
 extension ProxyURLProtocol: URLSessionDataDelegate {
     // MARK: NSURLSessionDelegate
 
+    func urlSession(_ session: URLSession,
+                    dataTask: URLSessionDataTask,
+                    didReceive response: URLResponse) async -> URLSession.ResponseDisposition {
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+
+        return .allow
+    }
+
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         client?.urlProtocol(self, didLoad: data)
     }
 
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        if let response = task.response {
-            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        }
-
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
         client?.urlProtocolDidFinishLoading(self)
     }
 }
@@ -132,11 +143,12 @@ class URLProtocolTestCase: BaseTestCase {
 
     // MARK: Tests
 
+    @MainActor
     func testThatURLProtocolReceivesRequestHeadersAndSessionConfigurationHeaders() {
         // Given
         let endpoint = Endpoint.responseHeaders.modifying(\.headers, to: ["Request-Header": "foobar"])
 
-        let expectation = self.expectation(description: "GET request should succeed")
+        let expectation = expectation(description: "GET request should succeed")
 
         var response: DataResponse<Data?, AFError>?
 

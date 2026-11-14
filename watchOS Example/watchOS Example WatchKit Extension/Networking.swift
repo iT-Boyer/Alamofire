@@ -33,12 +33,12 @@ final class Networking: ObservableObject {
 
     init() {
         $result
-            .compactMap { $0 }
+            .compactMap(\.self)
             .map {
                 if case .success = $0 {
-                    return "Successful!"
+                    "Successful!"
                 } else {
-                    return "Failed!"
+                    "Failed!"
                 }
             }
             .assign(to: \.message, on: self)

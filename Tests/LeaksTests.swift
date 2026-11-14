@@ -22,6 +22,7 @@
 //  THE SOFTWARE.
 //
 
+import Testing
 import XCTest
 
 // Only build when built through SPM, as tests run through Xcode don't like this.
@@ -30,6 +31,7 @@ import XCTest
 // Sample code from the Swift forums: https://forums.swift.org/t/test-for-memory-leaks-in-ci/36526/19
 #if SWIFT_PACKAGE && LEAKS && os(macOS)
 final class LeaksTests: XCTestCase {
+    @MainActor
     func testForLeaks() {
         // Sets up an atexit handler that invokes the leaks tool.
         atexit {
@@ -37,11 +39,7 @@ final class LeaksTests: XCTestCase {
             func leaksTo(_ file: String) -> Process {
                 let out = FileHandle(forWritingAtPath: file)!
                 defer {
-                    if #available(OSX 10.15, *) {
-                        try! out.close()
-                    } else {
-                        // Fallback on earlier versions
-                    }
+                    try! out.close()
                 }
                 let process = Process()
                 process.launchPath = "/usr/bin/leaks"
@@ -66,4 +64,41 @@ final class LeaksTests: XCTestCase {
         }
     }
 }
+
+@Suite
+struct SwiftTestingLeaksTest {
+    @Test
+    func forLeaks() {
+        // Sets up an atexit handler that invokes the leaks tool.
+        atexit {
+            @discardableResult
+            func leaksTo(_ file: String) -> Process {
+                let out = FileHandle(forWritingAtPath: file)!
+                defer {
+                    try! out.close()
+                }
+                let process = Process()
+                process.launchPath = "/usr/bin/leaks"
+                process.arguments = ["\(getpid())"]
+                process.standardOutput = out
+                process.standardError = out
+                process.launch()
+                process.waitUntilExit()
+                return process
+            }
+            let process = leaksTo("/dev/null")
+            guard process.terminationReason == .exit && [0, 1].contains(process.terminationStatus) else {
+                print("Process terminated: \(process.terminationReason): \(process.terminationStatus)")
+                exit(255)
+            }
+            if process.terminationStatus == 1 {
+                print("================")
+                print("Leaks Detected!!!")
+                leaksTo("/dev/tty")
+            }
+            exit(process.terminationStatus)
+        }
+    }
+}
+
 #endif

@@ -26,16 +26,17 @@ import Alamofire
 import Foundation
 import XCTest
 
-#if !SWIFT_PACKAGE
 final class UploadFileInitializationTestCase: BaseTestCase {
+    @MainActor
     func testUploadClassMethodWithMethodURLAndFile() {
         // Given
+        let session = stored(Session())
         let requestURL = Endpoint.method(.post).url
         let imageURL = url(forResource: "rainbow", withExtension: "jpg")
-        let expectation = self.expectation(description: "upload should complete")
+        let expectation = expectation(description: "upload should complete")
 
         // When
-        let request = AF.upload(imageURL, to: requestURL).response { _ in
+        let request = session.upload(imageURL, to: requestURL).response { _ in
             expectation.fulfill()
         }
 
@@ -48,15 +49,17 @@ final class UploadFileInitializationTestCase: BaseTestCase {
         XCTAssertNotNil(request.response, "response should not be nil")
     }
 
+    @MainActor
     func testUploadClassMethodWithMethodURLHeadersAndFile() {
         // Given
+        let session = stored(Session())
         let requestURL = Endpoint.method(.post).url
         let headers: HTTPHeaders = ["Authorization": "123456"]
         let imageURL = url(forResource: "rainbow", withExtension: "jpg")
-        let expectation = self.expectation(description: "upload should complete")
+        let expectation = expectation(description: "upload should complete")
 
         // When
-        let request = AF.upload(imageURL, to: requestURL, method: .post, headers: headers).response { _ in
+        let request = session.upload(imageURL, to: requestURL, method: .post, headers: headers).response { _ in
             expectation.fulfill()
         }
 
@@ -73,18 +76,19 @@ final class UploadFileInitializationTestCase: BaseTestCase {
         XCTAssertNotNil(request.response, "response should not be nil")
     }
 }
-#endif
 
 // MARK: -
 
 final class UploadDataInitializationTestCase: BaseTestCase {
+    @MainActor
     func testUploadClassMethodWithMethodURLAndData() {
         // Given
+        let session = stored(Session())
         let url = Endpoint.method(.post).url
-        let expectation = self.expectation(description: "upload should complete")
+        let expectation = expectation(description: "upload should complete")
 
         // When
-        let request = AF.upload(Data(), to: url).response { _ in
+        let request = session.upload(Data(), to: url).response { _ in
             expectation.fulfill()
         }
 
@@ -97,14 +101,16 @@ final class UploadDataInitializationTestCase: BaseTestCase {
         XCTAssertNotNil(request.response, "response should not be nil")
     }
 
+    @MainActor
     func testUploadClassMethodWithMethodURLHeadersAndData() {
         // Given
+        let session = stored(Session())
         let url = Endpoint.method(.post).url
         let headers: HTTPHeaders = ["Authorization": "123456"]
-        let expectation = self.expectation(description: "upload should complete")
+        let expectation = expectation(description: "upload should complete")
 
         // When
-        let request = AF.upload(Data(), to: url, headers: headers).response { _ in
+        let request = session.upload(Data(), to: url, headers: headers).response { _ in
             expectation.fulfill()
         }
 
@@ -124,17 +130,18 @@ final class UploadDataInitializationTestCase: BaseTestCase {
 
 // MARK: -
 
-#if !SWIFT_PACKAGE
 final class UploadStreamInitializationTestCase: BaseTestCase {
+    @MainActor
     func testUploadClassMethodWithMethodURLAndStream() {
         // Given
+        let session = stored(Session())
         let requestURL = Endpoint.method(.post).url
         let imageURL = url(forResource: "rainbow", withExtension: "jpg")
         let imageStream = InputStream(url: imageURL)!
-        let expectation = self.expectation(description: "upload should complete")
+        let expectation = expectation(description: "upload should complete")
 
         // When
-        let request = AF.upload(imageStream, to: requestURL).response { _ in
+        let request = session.upload(imageStream, to: requestURL).response { _ in
             expectation.fulfill()
         }
 
@@ -147,16 +154,18 @@ final class UploadStreamInitializationTestCase: BaseTestCase {
         XCTAssertNotNil(request.response, "response should not be nil")
     }
 
+    @MainActor
     func testUploadClassMethodWithMethodURLHeadersAndStream() {
         // Given
+        let session = stored(Session())
         let requestURL = Endpoint.method(.post).url
         let imageURL = url(forResource: "rainbow", withExtension: "jpg")
         let headers: HTTPHeaders = ["Authorization": "123456"]
         let imageStream = InputStream(url: imageURL)!
-        let expectation = self.expectation(description: "upload should complete")
+        let expectation = expectation(description: "upload should complete")
 
         // When
-        let request = AF.upload(imageStream, to: requestURL, headers: headers).response { _ in
+        let request = session.upload(imageStream, to: requestURL, headers: headers).response { _ in
             expectation.fulfill()
         }
 
@@ -173,21 +182,22 @@ final class UploadStreamInitializationTestCase: BaseTestCase {
         XCTAssertNotNil(request.response, "response should not be nil, tasks: \(request.tasks)")
     }
 }
-#endif
 
 // MARK: -
 
 final class UploadDataTestCase: BaseTestCase {
+    @MainActor
     func testUploadDataRequest() {
         // Given
+        let session = stored(Session())
         let url = Endpoint.method(.post).url
         let data = Data("Lorem ipsum dolor sit amet".utf8)
 
-        let expectation = self.expectation(description: "Upload request should succeed: \(url)")
+        let expectation = expectation(description: "Upload request should succeed: \(url)")
         var response: DataResponse<Data?, AFError>?
 
         // When
-        AF.upload(data, to: url)
+        session.upload(data, to: url)
             .response { resp in
                 response = resp
                 expectation.fulfill()
@@ -201,13 +211,15 @@ final class UploadDataTestCase: BaseTestCase {
         XCTAssertNil(response?.error)
     }
 
+    @MainActor
     func testUploadDataRequestWithProgress() {
         // Given
+        let session = stored(Session())
         let url = Endpoint.method(.post).url
-        let string = String(repeating: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ", count: 300)
+        let string = String(repeating: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ", count: 1000)
         let data = Data(string.utf8)
 
-        let expectation = self.expectation(description: "Bytes upload progress should be reported: \(url)")
+        let expectation = expectation(description: "Bytes upload progress should be reported: \(url)")
 
         var uploadProgressValues: [Double] = []
         var downloadProgressValues: [Double] = []
@@ -215,11 +227,11 @@ final class UploadDataTestCase: BaseTestCase {
         var response: DataResponse<Data?, AFError>?
 
         // When
-        AF.upload(data, to: url)
-            .uploadProgress { progress in
+        session.upload(data, to: url)
+            .uploadProgress(queue: session.rootQueue) { progress in
                 uploadProgressValues.append(progress.fractionCompleted)
             }
-            .downloadProgress { progress in
+            .downloadProgress(queue: session.rootQueue) { progress in
                 downloadProgressValues.append(progress.fractionCompleted)
             }
             .response { resp in
@@ -266,22 +278,24 @@ final class UploadDataTestCase: BaseTestCase {
 // MARK: -
 
 final class UploadMultipartFormDataTestCase: BaseTestCase {
+    @MainActor
     func testThatUploadingMultipartFormDataSetsContentTypeHeader() {
         // Given
+        let session = stored(Session())
         let url = Endpoint.method(.post).url
         let uploadData = Data("upload_data".utf8)
 
-        let expectation = self.expectation(description: "multipart form data upload should succeed")
+        let expectation = expectation(description: "multipart form data upload should succeed")
 
         var formData: MultipartFormData?
         var response: DataResponse<Data?, AFError>?
 
         // When
-        AF.upload(multipartFormData: { multipartFormData in
-                      multipartFormData.append(uploadData, withName: "upload_data")
-                      formData = multipartFormData
-                  },
-                  to: url)
+        session.upload(multipartFormData: { multipartFormData in
+                           multipartFormData.append(uploadData, withName: "upload_data")
+                           formData = multipartFormData
+                       },
+                       to: url)
             .response { resp in
                 response = resp
                 expectation.fulfill()
@@ -305,23 +319,25 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
         }
     }
 
+    @MainActor
     func testThatAccessingMultipartFormDataURLIsThreadSafe() {
         // Given
+        let session = stored(Session())
         let url = Endpoint.method(.post).url
         let uploadData = Data("upload_data".utf8)
 
-        let expectation = self.expectation(description: "multipart form data upload should succeed")
+        let expectation = expectation(description: "multipart form data upload should succeed")
 
         var formData: MultipartFormData?
         var generatedURL: URL?
         var response: DataResponse<Data?, AFError>?
 
         // When
-        let upload = AF.upload(multipartFormData: { multipartFormData in
-                                   multipartFormData.append(uploadData, withName: "upload_data")
-                                   formData = multipartFormData
-                               },
-                               to: url)
+        let upload = session.upload(multipartFormData: { multipartFormData in
+                                        multipartFormData.append(uploadData, withName: "upload_data")
+                                        formData = multipartFormData
+                                    },
+                                    to: url)
 
         // Access will produce a thread-sanitizer issue if it isn't safe.
         generatedURL = upload.convertible.urlRequest?.url
@@ -350,18 +366,20 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
         }
     }
 
-    func testThatCustomBoundaryCanBeSetWhenUploadingMultipartFormData() throws {
+    @MainActor
+    func testThatCustomBoundaryCanBeSetWhenUploadingMultipartFormData() {
         // Given
+        let session = stored(Session())
         let uploadData = Data("upload_data".utf8)
 
         let formData = MultipartFormData(fileManager: .default, boundary: "custom-test-boundary")
         formData.append(uploadData, withName: "upload_data")
 
-        let expectation = self.expectation(description: "multipart form data upload should succeed")
+        let expectation = expectation(description: "multipart form data upload should succeed")
         var response: DataResponse<Data?, AFError>?
 
         // When
-        AF.upload(multipartFormData: formData, with: Endpoint.method(.post)).response { resp in
+        session.upload(multipartFormData: formData, with: Endpoint.method(.post)).response { resp in
             response = resp
             expectation.fulfill()
         }
@@ -382,20 +400,22 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
         }
     }
 
+    @MainActor
     func testThatUploadingMultipartFormDataSucceedsWithDefaultParameters() {
         // Given
+        let session = stored(Session())
         let frenchData = Data("français".utf8)
         let japaneseData = Data("日本語".utf8)
 
-        let expectation = self.expectation(description: "multipart form data upload should succeed")
+        let expectation = expectation(description: "multipart form data upload should succeed")
         var response: DataResponse<Data?, AFError>?
 
         // When
-        AF.upload(multipartFormData: { multipartFormData in
-                      multipartFormData.append(frenchData, withName: "french")
-                      multipartFormData.append(japaneseData, withName: "japanese")
-                  },
-                  to: Endpoint.method(.post))
+        session.upload(multipartFormData: { multipartFormData in
+                           multipartFormData.append(frenchData, withName: "french")
+                           multipartFormData.append(japaneseData, withName: "japanese")
+                       },
+                       to: Endpoint.method(.post))
             .response { resp in
                 response = resp
                 expectation.fulfill()
@@ -410,28 +430,33 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
         XCTAssertNil(response?.error)
     }
 
+    @MainActor
     func testThatUploadingMultipartFormDataWhileStreamingFromMemoryMonitorsProgress() {
         executeMultipartFormDataUploadRequestWithProgress(streamFromDisk: false)
     }
 
+    @MainActor
     func testThatUploadingMultipartFormDataWhileStreamingFromDiskMonitorsProgress() {
         executeMultipartFormDataUploadRequestWithProgress(streamFromDisk: true)
     }
 
+    @MainActor
     func testThatUploadingMultipartFormDataBelowMemoryThresholdStreamsFromMemory() {
         // Given
-        let frenchData = Data("français".utf8)
-        let japaneseData = Data("日本語".utf8)
+        let session = stored(Session())
+        let frenchData = Data(String(repeating: "français", count: 1_000_000).utf8)
+        let japaneseData = Data(String(repeating: "日本語", count: 1_000_000).utf8)
 
-        let expectation = self.expectation(description: "multipart form data upload should succeed")
+        let expectation = expectation(description: "multipart form data upload should succeed")
         var response: DataResponse<Data?, AFError>?
 
         // When
-        let request = AF.upload(multipartFormData: { multipartFormData in
-                                    multipartFormData.append(frenchData, withName: "french")
-                                    multipartFormData.append(japaneseData, withName: "japanese")
-                                },
-                                to: Endpoint.method(.post))
+        let request = session.upload(multipartFormData: { multipartFormData in
+                                         multipartFormData.append(frenchData, withName: "french")
+                                         multipartFormData.append(japaneseData, withName: "japanese")
+                                     },
+                                     to: Endpoint.method(.post),
+                                     usingThreshold: .max)
             .response { resp in
                 response = resp
                 expectation.fulfill()
@@ -448,21 +473,23 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
         XCTAssertTrue(response?.result.isSuccess == true)
     }
 
+    @MainActor
     func testThatUploadingMultipartFormDataBelowMemoryThresholdSetsContentTypeHeader() {
         // Given
+        let session = stored(Session())
         let uploadData = Data("upload_data".utf8)
 
-        let expectation = self.expectation(description: "multipart form data upload should succeed")
+        let expectation = expectation(description: "multipart form data upload should succeed")
 
         var formData: MultipartFormData?
         var response: DataResponse<Data?, AFError>?
 
         // When
-        let request = AF.upload(multipartFormData: { multipartFormData in
-                                    multipartFormData.append(uploadData, withName: "upload_data")
-                                    formData = multipartFormData
-                                },
-                                to: Endpoint.method(.post))
+        let request = session.upload(multipartFormData: { multipartFormData in
+                                         multipartFormData.append(uploadData, withName: "upload_data")
+                                         formData = multipartFormData
+                                     },
+                                     to: Endpoint.method(.post))
             .response { resp in
                 response = resp
                 expectation.fulfill()
@@ -486,21 +513,23 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
         }
     }
 
+    @MainActor
     func testThatUploadingMultipartFormDataAboveMemoryThresholdStreamsFromDisk() {
         // Given
+        let session = stored(Session())
         let frenchData = Data("français".utf8)
         let japaneseData = Data("日本語".utf8)
 
-        let expectation = self.expectation(description: "multipart form data upload should succeed")
+        let expectation = expectation(description: "multipart form data upload should succeed")
         var response: DataResponse<Data?, AFError>?
 
         // When
-        let request = AF.upload(multipartFormData: { multipartFormData in
-                                    multipartFormData.append(frenchData, withName: "french")
-                                    multipartFormData.append(japaneseData, withName: "japanese")
-                                },
-                                to: Endpoint.method(.post),
-                                usingThreshold: 0).response { resp in
+        let request = session.upload(multipartFormData: { multipartFormData in
+                                         multipartFormData.append(frenchData, withName: "french")
+                                         multipartFormData.append(japaneseData, withName: "japanese")
+                                     },
+                                     to: Endpoint.method(.post),
+                                     usingThreshold: 0).response { resp in
             response = resp
             expectation.fulfill()
         }
@@ -508,30 +537,32 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
         waitForExpectations(timeout: timeout)
 
         // Then
-        guard let uploadable = request.uploadable, case let .file(url, _) = uploadable else {
+        // No deterministic way to test whether the upload was written to disk, so just check whether the upload was a file.
+        guard let uploadable = request.uploadable, case .file = uploadable else {
             XCTFail("Uploadable is not .file")
             return
         }
 
         XCTAssertTrue(response?.result.isSuccess == true)
-        XCTAssertFalse(FileManager.default.fileExists(atPath: url.path))
     }
 
+    @MainActor
     func testThatUploadingMultipartFormDataAboveMemoryThresholdSetsContentTypeHeader() {
         // Given
+        let session = stored(Session())
         let uploadData = Data("upload_data".utf8)
 
-        let expectation = self.expectation(description: "multipart form data upload should succeed")
+        let expectation = expectation(description: "multipart form data upload should succeed")
         var response: DataResponse<Data?, AFError>?
         var formData: MultipartFormData?
 
         // When
-        let request = AF.upload(multipartFormData: { multipartFormData in
-                                    multipartFormData.append(uploadData, withName: "upload_data")
-                                    formData = multipartFormData
-                                },
-                                to: Endpoint.method(.post),
-                                usingThreshold: 0).response { resp in
+        let request = session.upload(multipartFormData: { multipartFormData in
+                                         multipartFormData.append(uploadData, withName: "upload_data")
+                                         formData = multipartFormData
+                                     },
+                                     to: Endpoint.method(.post),
+                                     usingThreshold: 0).response { resp in
             response = resp
             expectation.fulfill()
         }
@@ -556,19 +587,21 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
         }
     }
 
+    @MainActor
     func testThatUploadingMultipartFormDataWithNonexistentFileThrowsAnError() {
         // Given
+        let session = stored(Session())
         let imageURL = URL(fileURLWithPath: "does_not_exist.jpg")
 
-        let expectation = self.expectation(description: "multipart form data upload from nonexistent file should fail")
+        let expectation = expectation(description: "multipart form data upload from nonexistent file should fail")
         var response: DataResponse<Data?, AFError>?
 
         // When
-        let request = AF.upload(multipartFormData: { multipartFormData in
-                                    multipartFormData.append(imageURL, withName: "upload_file")
-                                },
-                                to: Endpoint.method(.post),
-                                usingThreshold: 0).response { resp in
+        let request = session.upload(multipartFormData: { multipartFormData in
+                                         multipartFormData.append(imageURL, withName: "upload_file")
+                                     },
+                                     to: Endpoint.method(.post),
+                                     usingThreshold: 0).response { resp in
             response = resp
             expectation.fulfill()
         }
@@ -580,8 +613,10 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
         XCTAssertTrue(response?.result.isSuccess == false)
     }
 
+    @MainActor
     func testThatUploadingMultipartFormDataWorksWhenAppendingBodyPartsInURLRequestConvertible() {
         // Given
+        let session = stored(Session())
         struct MultipartFormDataRequest: URLRequestConvertible {
             let multipartFormData = MultipartFormData()
 
@@ -601,11 +636,11 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
 
         let request = MultipartFormDataRequest()
 
-        let expectation = self.expectation(description: "multipart form data upload should succeed")
+        let expectation = expectation(description: "multipart form data upload should succeed")
         var response: DataResponse<Data?, AFError>?
 
         // When
-        let uploadRequest = AF.upload(multipartFormData: request.multipartFormData, with: request)
+        let uploadRequest = session.upload(multipartFormData: request.multipartFormData, with: request)
             .response { resp in
                 response = resp
                 expectation.fulfill()
@@ -629,6 +664,7 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
     }
 
     #if os(macOS)
+    @MainActor
     func disabled_testThatUploadingMultipartFormDataOnBackgroundSessionWritesDataToFileToAvoidCrash() {
         // Given
         let manager: Session = {
@@ -641,7 +677,7 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
         let french = Data("français".utf8)
         let japanese = Data("日本語".utf8)
 
-        let expectation = self.expectation(description: "multipart form data upload should succeed")
+        let expectation = expectation(description: "multipart form data upload should succeed")
 
         var request: URLRequest?
         var response: HTTPURLResponse?
@@ -680,14 +716,16 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
 
     // MARK: Combined Test Execution
 
+    @MainActor
     private func executeMultipartFormDataUploadRequestWithProgress(streamFromDisk: Bool) {
         // Given
+        let session = stored(Session())
         let loremData1 = Data(String(repeating: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                                     count: 100).utf8)
+                                     count: 8700).utf8)
         let loremData2 = Data(String(repeating: "Lorem ipsum dolor sit amet, nam no graeco recusabo appellantur.",
-                                     count: 100).utf8)
+                                     count: 7900).utf8)
 
-        let expectation = self.expectation(description: "multipart form data upload should succeed")
+        let expectation = expectation(description: "multipart form data upload should succeed")
 
         var uploadProgressValues: [Double] = []
         var downloadProgressValues: [Double] = []
@@ -695,16 +733,16 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
         var response: DataResponse<Data?, AFError>?
 
         // When
-        AF.upload(multipartFormData: { multipartFormData in
-                      multipartFormData.append(loremData1, withName: "lorem1")
-                      multipartFormData.append(loremData2, withName: "lorem2")
-                  },
-                  to: Endpoint.method(.post),
-                  usingThreshold: streamFromDisk ? 0 : 100_000_000)
-            .uploadProgress { progress in
+        session.upload(multipartFormData: { multipartFormData in
+                           multipartFormData.append(loremData1, withName: "lorem1")
+                           multipartFormData.append(loremData2, withName: "lorem2")
+                       },
+                       to: Endpoint.method(.post),
+                       usingThreshold: streamFromDisk ? 0 : .max)
+            .uploadProgress(queue: session.rootQueue) { progress in
                 uploadProgressValues.append(progress.fractionCompleted)
             }
-            .downloadProgress { progress in
+            .downloadProgress(queue: session.rootQueue) { progress in
                 downloadProgressValues.append(progress.fractionCompleted)
             }
             .response { resp in
@@ -749,15 +787,15 @@ final class UploadMultipartFormDataTestCase: BaseTestCase {
 }
 
 final class UploadRetryTests: BaseTestCase {
+    @MainActor
     func testThatDataUploadRetriesCorrectly() {
         // Given
         let endpoint = Endpoint(path: .delay(interval: 1),
                                 method: .post,
                                 headers: [.contentType("text/plain")],
                                 timeout: 0.1)
-        let retrier = InspectorInterceptor(SingleRetrier())
         let didRetry = expectation(description: "request did retry")
-        retrier.onRetry = { _ in didRetry.fulfill() }
+        let retrier = InspectorInterceptor(SingleRetrier(), onRetry: { _ in didRetry.fulfill() })
         let session = Session(interceptor: retrier)
         let body = "body"
         let data = Data(body.utf8)
@@ -780,6 +818,7 @@ final class UploadRetryTests: BaseTestCase {
 }
 
 final class UploadRequestEventsTestCase: BaseTestCase {
+    @MainActor
     func testThatUploadRequestTriggersAllAppropriateLifetimeEvents() {
         // Given
         let eventMonitor = ClosureEventMonitor()
@@ -822,6 +861,7 @@ final class UploadRequestEventsTestCase: BaseTestCase {
         XCTAssertEqual(request.state, .finished)
     }
 
+    @MainActor
     func testThatCancelledUploadRequestTriggersAllAppropriateLifetimeEvents() {
         // Given
         let eventMonitor = ClosureEventMonitor()

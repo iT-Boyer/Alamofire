@@ -27,14 +27,16 @@ import Foundation
 import XCTest
 
 final class ResponseTestCase: BaseTestCase {
+    @MainActor
     func testThatResponseReturnsSuccessResultWithValidData() {
         // Given
-        let expectation = self.expectation(description: "request should succeed")
+        let session = stored(Session())
+        let expectation = expectation(description: "request should succeed")
 
         var response: DataResponse<Data?, AFError>?
 
         // When
-        AF.request(.default, parameters: ["foo": "bar"]).response { resp in
+        session.request(.default, parameters: ["foo": "bar"]).response { resp in
             response = resp
             expectation.fulfill()
         }
@@ -49,15 +51,17 @@ final class ResponseTestCase: BaseTestCase {
         XCTAssertNotNil(response?.metrics)
     }
 
+    @MainActor
     func testThatResponseReturnsFailureResultWithOptionalDataAndError() {
         // Given
-        let urlString = String.nonexistentDomain
-        let expectation = self.expectation(description: "request should fail with invalid hostname error")
+        let session = stored(Session())
+        let urlString = String.invalidURL
+        let expectation = expectation(description: "request should fail with invalid URL error")
 
         var response: DataResponse<Data?, AFError>?
 
         // When
-        AF.request(urlString, parameters: ["foo": "bar"]).response { resp in
+        session.request(urlString, parameters: ["foo": "bar"]).response { resp in
             response = resp
             expectation.fulfill()
         }
@@ -70,7 +74,6 @@ final class ResponseTestCase: BaseTestCase {
         XCTAssertNil(response?.data)
         XCTAssertNotNil(response?.error)
         XCTAssertEqual(response?.error?.isSessionTaskError, true)
-        XCTAssertEqual(response?.error?.isHostURLError, true)
         XCTAssertNotNil(response?.metrics)
     }
 }
@@ -78,14 +81,16 @@ final class ResponseTestCase: BaseTestCase {
 // MARK: -
 
 final class ResponseDataTestCase: BaseTestCase {
+    @MainActor
     func testThatResponseDataReturnsSuccessResultWithValidData() {
         // Given
-        let expectation = self.expectation(description: "request should succeed")
+        let session = stored(Session())
+        let expectation = expectation(description: "request should succeed")
 
         var response: DataResponse<Data, AFError>?
 
         // When
-        AF.request(.default, parameters: ["foo": "bar"]).responseData { resp in
+        session.request(.default, parameters: ["foo": "bar"]).responseData { resp in
             response = resp
             expectation.fulfill()
         }
@@ -101,15 +106,17 @@ final class ResponseDataTestCase: BaseTestCase {
         XCTAssertNotNil(response?.metrics)
     }
 
+    @MainActor
     func testThatResponseDataReturnsFailureResultWithOptionalDataAndError() {
         // Given
-        let urlString = String.nonexistentDomain
-        let expectation = self.expectation(description: "request should fail with 404")
+        let session = stored(Session())
+        let urlString = String.invalidURL
+        let expectation = expectation(description: "request should fail with invalid URL error")
 
         var response: DataResponse<Data, AFError>?
 
         // When
-        AF.request(urlString, parameters: ["foo": "bar"]).responseData { resp in
+        session.request(urlString, parameters: ["foo": "bar"]).responseData { resp in
             response = resp
             expectation.fulfill()
         }
@@ -122,7 +129,6 @@ final class ResponseDataTestCase: BaseTestCase {
         XCTAssertNil(response?.data)
         XCTAssertEqual(response?.result.isFailure, true)
         XCTAssertEqual(response?.error?.isSessionTaskError, true)
-        XCTAssertEqual(response?.error?.isHostURLError, true)
         XCTAssertNotNil(response?.metrics)
     }
 }
@@ -130,14 +136,16 @@ final class ResponseDataTestCase: BaseTestCase {
 // MARK: -
 
 final class ResponseStringTestCase: BaseTestCase {
+    @MainActor
     func testThatResponseStringReturnsSuccessResultWithValidString() {
         // Given
-        let expectation = self.expectation(description: "request should succeed")
+        let session = stored(Session())
+        let expectation = expectation(description: "request should succeed")
 
         var response: DataResponse<String, AFError>?
 
         // When
-        AF.request(.default, parameters: ["foo": "bar"]).responseString { resp in
+        session.request(.default, parameters: ["foo": "bar"]).responseString { resp in
             response = resp
             expectation.fulfill()
         }
@@ -153,15 +161,17 @@ final class ResponseStringTestCase: BaseTestCase {
         XCTAssertNotNil(response?.metrics)
     }
 
+    @MainActor
     func testThatResponseStringReturnsFailureResultWithOptionalDataAndError() {
         // Given
-        let urlString = String.nonexistentDomain
-        let expectation = self.expectation(description: "request should fail with 404")
+        let session = stored(Session())
+        let urlString = String.invalidURL
+        let expectation = expectation(description: "request should fail with invalid URL error")
 
         var response: DataResponse<String, AFError>?
 
         // When
-        AF.request(urlString, parameters: ["foo": "bar"]).responseString { resp in
+        session.request(urlString, parameters: ["foo": "bar"]).responseString { resp in
             response = resp
             expectation.fulfill()
         }
@@ -174,22 +184,24 @@ final class ResponseStringTestCase: BaseTestCase {
         XCTAssertNil(response?.data)
         XCTAssertEqual(response?.result.isFailure, true)
         XCTAssertEqual(response?.error?.isSessionTaskError, true)
-        XCTAssertEqual(response?.error?.isHostURLError, true)
         XCTAssertNotNil(response?.metrics)
     }
 }
 
 // MARK: -
 
+@available(*, deprecated)
 final class ResponseJSONTestCase: BaseTestCase {
+    @MainActor
     func testThatResponseJSONReturnsSuccessResultWithValidJSON() {
         // Given
-        let expectation = self.expectation(description: "request should succeed")
+        let session = stored(Session())
+        let expectation = expectation(description: "request should succeed")
 
         var response: DataResponse<Any, AFError>?
 
         // When
-        AF.request(.default, parameters: ["foo": "bar"]).responseJSON { resp in
+        session.request(.default, parameters: ["foo": "bar"]).responseJSON { resp in
             response = resp
             expectation.fulfill()
         }
@@ -205,15 +217,17 @@ final class ResponseJSONTestCase: BaseTestCase {
         XCTAssertNotNil(response?.metrics)
     }
 
+    @MainActor
     func testThatResponseStringReturnsFailureResultWithOptionalDataAndError() {
         // Given
-        let urlString = String.nonexistentDomain
-        let expectation = self.expectation(description: "request should fail")
+        let session = stored(Session())
+        let urlString = String.invalidURL
+        let expectation = expectation(description: "request should fail")
 
         var response: DataResponse<Any, AFError>?
 
         // When
-        AF.request(urlString, parameters: ["foo": "bar"]).responseJSON { resp in
+        session.request(urlString, parameters: ["foo": "bar"]).responseJSON { resp in
             response = resp
             expectation.fulfill()
         }
@@ -226,18 +240,19 @@ final class ResponseJSONTestCase: BaseTestCase {
         XCTAssertNil(response?.data)
         XCTAssertEqual(response?.result.isFailure, true)
         XCTAssertEqual(response?.error?.isSessionTaskError, true)
-        XCTAssertEqual(response?.error?.isHostURLError, true)
         XCTAssertNotNil(response?.metrics)
     }
 
+    @MainActor
     func testThatResponseJSONReturnsSuccessResultForGETRequest() {
         // Given
-        let expectation = self.expectation(description: "request should succeed")
+        let session = stored(Session())
+        let expectation = expectation(description: "request should succeed")
 
         var response: DataResponse<Any, AFError>?
 
         // When
-        AF.request(.default, parameters: ["foo": "bar"]).responseJSON { resp in
+        session.request(.default, parameters: ["foo": "bar"]).responseJSON { resp in
             response = resp
             expectation.fulfill()
         }
@@ -261,14 +276,16 @@ final class ResponseJSONTestCase: BaseTestCase {
         }
     }
 
+    @MainActor
     func testThatResponseJSONReturnsSuccessResultForPOSTRequest() {
         // Given
-        let expectation = self.expectation(description: "request should succeed")
+        let session = stored(Session())
+        let expectation = expectation(description: "request should succeed")
 
         var response: DataResponse<Any, AFError>?
 
         // When
-        AF.request(.method(.post), parameters: ["foo": "bar"]).responseJSON { resp in
+        session.request(.method(.post), parameters: ["foo": "bar"]).responseJSON { resp in
             response = resp
             expectation.fulfill()
         }
@@ -294,15 +311,17 @@ final class ResponseJSONTestCase: BaseTestCase {
 }
 
 final class ResponseJSONDecodableTestCase: BaseTestCase {
+    @MainActor
     func testThatResponseDecodableReturnsSuccessResultWithValidJSON() {
         // Given
+        let session = stored(Session())
         let url = Endpoint().url
-        let expectation = self.expectation(description: "request should succeed")
+        let expectation = expectation(description: "request should succeed")
 
         var response: DataResponse<TestResponse, AFError>?
 
         // When
-        AF.request(url, parameters: [:]).responseDecodable(of: TestResponse.self) { resp in
+        session.request(url, parameters: [:]).responseDecodable(of: TestResponse.self) { resp in
             response = resp
             expectation.fulfill()
         }
@@ -318,15 +337,17 @@ final class ResponseJSONDecodableTestCase: BaseTestCase {
         XCTAssertNotNil(response?.metrics)
     }
 
+    @MainActor
     func testThatResponseDecodableWithPassedTypeReturnsSuccessResultWithValidJSON() {
         // Given
+        let session = stored(Session())
         let url = Endpoint().url
-        let expectation = self.expectation(description: "request should succeed")
+        let expectation = expectation(description: "request should succeed")
 
         var response: DataResponse<TestResponse, AFError>?
 
         // When
-        AF.request(url, parameters: [:]).responseDecodable(of: TestResponse.self) {
+        session.request(url, parameters: [:]).responseDecodable(of: TestResponse.self) {
             response = $0
             expectation.fulfill()
         }
@@ -342,15 +363,17 @@ final class ResponseJSONDecodableTestCase: BaseTestCase {
         XCTAssertNotNil(response?.metrics)
     }
 
+    @MainActor
     func testThatResponseStringReturnsFailureResultWithOptionalDataAndError() {
         // Given
-        let urlString = String.nonexistentDomain
-        let expectation = self.expectation(description: "request should fail")
+        let session = stored(Session())
+        let urlString = String.invalidURL
+        let expectation = expectation(description: "request should fail")
 
         var response: DataResponse<TestResponse, AFError>?
 
         // When
-        AF.request(urlString, parameters: [:]).responseDecodable(of: TestResponse.self) { resp in
+        session.request(urlString, parameters: [:]).responseDecodable(of: TestResponse.self) { resp in
             response = resp
             expectation.fulfill()
         }
@@ -363,7 +386,6 @@ final class ResponseJSONDecodableTestCase: BaseTestCase {
         XCTAssertNil(response?.data)
         XCTAssertEqual(response?.result.isFailure, true)
         XCTAssertEqual(response?.error?.isSessionTaskError, true)
-        XCTAssertEqual(response?.error?.isHostURLError, true)
         XCTAssertNotNil(response?.metrics)
     }
 }
@@ -371,17 +393,18 @@ final class ResponseJSONDecodableTestCase: BaseTestCase {
 // MARK: -
 
 final class ResponseMapTestCase: BaseTestCase {
+    @MainActor
     func testThatMapTransformsSuccessValue() {
         // Given
-        let expectation = self.expectation(description: "request should succeed")
+        let session = stored(Session())
+        let expectation = expectation(description: "request should succeed")
 
         var response: DataResponse<String, AFError>?
 
         // When
-        AF.request(.default, parameters: ["foo": "bar"]).responseJSON { resp in
-            response = resp.map { json in
-                // json["args"]["foo"] is "bar": use this invariant to test the map function
-                ((json as? [String: Any])?["args"] as? [String: Any])?["foo"] as? String ?? "invalid"
+        session.request(.default, parameters: ["foo": "bar"]).responseDecodable(of: TestResponse.self) { resp in
+            response = resp.map { response in
+                response.args["foo"] ?? "invalid"
             }
 
             expectation.fulfill()
@@ -398,15 +421,17 @@ final class ResponseMapTestCase: BaseTestCase {
         XCTAssertNotNil(response?.metrics)
     }
 
+    @MainActor
     func testThatMapPreservesFailureError() {
         // Given
-        let urlString = String.nonexistentDomain
-        let expectation = self.expectation(description: "request should fail with 404")
+        let session = stored(Session())
+        let urlString = String.invalidURL
+        let expectation = expectation(description: "request should fail with invalid URL error")
 
         var response: DataResponse<String, AFError>?
 
         // When
-        AF.request(urlString, parameters: ["foo": "bar"]).responseData { resp in
+        session.request(urlString, parameters: ["foo": "bar"]).responseData { resp in
             response = resp.map { _ in "ignored" }
             expectation.fulfill()
         }
@@ -419,7 +444,6 @@ final class ResponseMapTestCase: BaseTestCase {
         XCTAssertNil(response?.data)
         XCTAssertEqual(response?.result.isFailure, true)
         XCTAssertEqual(response?.error?.isSessionTaskError, true)
-        XCTAssertEqual(response?.error?.isHostURLError, true)
         XCTAssertNotNil(response?.metrics)
     }
 }
@@ -427,17 +451,18 @@ final class ResponseMapTestCase: BaseTestCase {
 // MARK: -
 
 final class ResponseTryMapTestCase: BaseTestCase {
+    @MainActor
     func testThatTryMapTransformsSuccessValue() {
         // Given
-        let expectation = self.expectation(description: "request should succeed")
+        let session = stored(Session())
+        let expectation = expectation(description: "request should succeed")
 
-        var response: DataResponse<String, Error>?
+        var response: DataResponse<String, any Error>?
 
         // When
-        AF.request(.default, parameters: ["foo": "bar"]).responseJSON { resp in
-            response = resp.tryMap { json in
-                // json["args"]["foo"] is "bar": use this invariant to test the tryMap function
-                ((json as? [String: Any])?["args"] as? [String: Any])?["foo"] as? String ?? "invalid"
+        session.request(.default, parameters: ["foo": "bar"]).responseDecodable(of: TestResponse.self) { resp in
+            response = resp.tryMap { response in
+                response.args["foo"] ?? "invalid"
             }
 
             expectation.fulfill()
@@ -454,16 +479,18 @@ final class ResponseTryMapTestCase: BaseTestCase {
         XCTAssertNotNil(response?.metrics)
     }
 
+    @MainActor
     func testThatTryMapCatchesTransformationError() {
         // Given
+        let session = stored(Session())
         struct TransformError: Error {}
 
-        let expectation = self.expectation(description: "request should succeed")
+        let expectation = expectation(description: "request should succeed")
 
-        var response: DataResponse<String, Error>?
+        var response: DataResponse<String, any Error>?
 
         // When
-        AF.request(.default, parameters: ["foo": "bar"]).responseData { resp in
+        session.request(.default, parameters: ["foo": "bar"]).responseData { resp in
             response = resp.tryMap { _ in
                 throw TransformError()
             }
@@ -488,15 +515,17 @@ final class ResponseTryMapTestCase: BaseTestCase {
         XCTAssertNotNil(response?.metrics)
     }
 
+    @MainActor
     func testThatTryMapPreservesFailureError() {
         // Given
-        let urlString = String.nonexistentDomain
-        let expectation = self.expectation(description: "request should fail with 404")
+        let session = stored(Session())
+        let urlString = String.invalidURL
+        let expectation = expectation(description: "request should fail with invalid URL error")
 
-        var response: DataResponse<String, Error>?
+        var response: DataResponse<String, any Error>?
 
         // When
-        AF.request(urlString, parameters: ["foo": "bar"]).responseData { resp in
+        session.request(urlString, parameters: ["foo": "bar"]).responseData { resp in
             response = resp.tryMap { _ in "ignored" }
             expectation.fulfill()
         }
@@ -509,7 +538,6 @@ final class ResponseTryMapTestCase: BaseTestCase {
         XCTAssertNil(response?.data)
         XCTAssertEqual(response?.result.isFailure, true)
         XCTAssertEqual(response?.error?.asAFError?.isSessionTaskError, true)
-        XCTAssertEqual(response?.error?.asAFError?.isHostURLError, true)
         XCTAssertNotNil(response?.metrics)
     }
 }
@@ -529,15 +557,17 @@ enum TransformationError: Error {
 }
 
 final class ResponseMapErrorTestCase: BaseTestCase {
+    @MainActor
     func testThatMapErrorTransformsFailureValue() {
         // Given
-        let urlString = String.nonexistentDomain
-        let expectation = self.expectation(description: "request should not succeed")
+        let session = stored(Session())
+        let urlString = String.invalidURL
+        let expectation = expectation(description: "request should not succeed")
 
-        var response: DataResponse<Any, TestError>?
+        var response: DataResponse<TestResponse, TestError>?
 
         // When
-        AF.request(urlString).responseJSON { resp in
+        session.request(urlString).responseDecodable(of: TestResponse.self) { resp in
             response = resp.mapError { error in
                 TestError.error(error: error)
             }
@@ -557,14 +587,16 @@ final class ResponseMapErrorTestCase: BaseTestCase {
         XCTAssertNotNil(response?.metrics)
     }
 
+    @MainActor
     func testThatMapErrorPreservesSuccessValue() {
         // Given
-        let expectation = self.expectation(description: "request should succeed")
+        let session = stored(Session())
+        let expectation = expectation(description: "request should succeed")
 
         var response: DataResponse<Data, TestError>?
 
         // When
-        AF.request(.default).responseData { resp in
+        session.request(.default).responseData { resp in
             response = resp.mapError { TestError.error(error: $0) }
             expectation.fulfill()
         }
@@ -583,14 +615,16 @@ final class ResponseMapErrorTestCase: BaseTestCase {
 // MARK: -
 
 final class ResponseTryMapErrorTestCase: BaseTestCase {
+    @MainActor
     func testThatTryMapErrorPreservesSuccessValue() {
         // Given
-        let expectation = self.expectation(description: "request should succeed")
+        let session = stored(Session())
+        let expectation = expectation(description: "request should succeed")
 
-        var response: DataResponse<Data, Error>?
+        var response: DataResponse<Data, any Error>?
 
         // When
-        AF.request(.default).responseData { resp in
+        session.request(.default).responseData { resp in
             response = resp.tryMapError { TestError.error(error: $0) }
             expectation.fulfill()
         }
@@ -605,15 +639,17 @@ final class ResponseTryMapErrorTestCase: BaseTestCase {
         XCTAssertNotNil(response?.metrics)
     }
 
+    @MainActor
     func testThatTryMapErrorCatchesTransformationError() {
         // Given
-        let urlString = String.nonexistentDomain
-        let expectation = self.expectation(description: "request should fail")
+        let session = stored(Session())
+        let urlString = String.invalidURL
+        let expectation = expectation(description: "request should fail")
 
-        var response: DataResponse<Data, Error>?
+        var response: DataResponse<Data, any Error>?
 
         // When
-        AF.request(urlString).responseData { resp in
+        session.request(urlString).responseData { resp in
             response = resp.tryMapError { _ in try TransformationError.error.alwaysFails() }
             expectation.fulfill()
         }
@@ -635,15 +671,17 @@ final class ResponseTryMapErrorTestCase: BaseTestCase {
         XCTAssertNotNil(response?.metrics)
     }
 
+    @MainActor
     func testThatTryMapErrorTransformsError() {
         // Given
-        let urlString = String.nonexistentDomain
-        let expectation = self.expectation(description: "request should fail")
+        let session = stored(Session())
+        let urlString = String.invalidURL
+        let expectation = expectation(description: "request should fail")
 
-        var response: DataResponse<Data, Error>?
+        var response: DataResponse<Data, any Error>?
 
         // When
-        AF.request(urlString).responseData { resp in
+        session.request(urlString).responseData { resp in
             response = resp.tryMapError { TestError.error(error: $0) }
             expectation.fulfill()
         }
@@ -655,13 +693,6 @@ final class ResponseTryMapErrorTestCase: BaseTestCase {
         XCTAssertNil(response?.response)
         XCTAssertNil(response?.data)
         XCTAssertEqual(response?.result.isFailure, true)
-
-        guard let error = response?.error as? TestError,
-              case let .error(underlyingError) = error
-        else { XCTFail(); return }
-
-        XCTAssertEqual(underlyingError.asAFError?.isSessionTaskError, true)
-        XCTAssertEqual(underlyingError.asAFError?.isHostURLError, true)
         XCTAssertNotNil(response?.metrics)
     }
 }

@@ -35,6 +35,10 @@ class DetailViewController: UITableViewController {
             oldValue?.cancel()
 
             title = request?.description
+            request?.onURLRequestCreation { [weak self] _ in
+                self?.title = self?.request?.description
+            }
+
             refreshControl?.endRefreshing()
             headers.removeAll()
             body = nil
@@ -68,10 +72,11 @@ class DetailViewController: UITableViewController {
     // MARK: IBActions
 
     @IBAction func refresh() {
-        guard let request = request else {
+        guard let request else {
             return
         }
 
+        refreshControl?.isHidden = false
         refreshControl?.beginRefreshing()
 
         let start = CACurrentMediaTime()
@@ -80,7 +85,7 @@ class DetailViewController: UITableViewController {
             let end = CACurrentMediaTime()
             self.elapsedTime = end - start
 
-            if let response = response {
+            if let response {
                 for (field, value) in response.allHeaderFields {
                     self.headers["\(field)"] = "\(value)"
                 }
@@ -144,9 +149,9 @@ extension DetailViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch Sections(rawValue: section)! {
         case .headers:
-            return headers.count
+            headers.count
         case .body:
-            return body == nil ? 0 : 1
+            body == nil ? 0 : 1
         }
     }
 
@@ -193,14 +198,14 @@ extension DetailViewController {
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         switch Sections(rawValue: indexPath.section)! {
         case .body:
-            return 300
+            300
         default:
-            return tableView.rowHeight
+            tableView.rowHeight
         }
     }
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        if Sections(rawValue: section) == .body, let elapsedTime = elapsedTime {
+        if Sections(rawValue: section) == .body, let elapsedTime {
             let elapsedTimeText = DetailViewController.numberFormatter.string(from: elapsedTime as NSNumber) ?? "???"
             return "Elapsed Time: \(elapsedTimeText) sec"
         }

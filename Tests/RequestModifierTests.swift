@@ -28,14 +28,16 @@ import XCTest
 final class RequestModifierTests: BaseTestCase {
     // MARK: - DataRequest
 
+    @MainActor
     func testThatDataRequestsCanHaveCustomTimeoutValueSet() {
         // Given
+        let session = stored(Session())
         let completed = expectation(description: "request completed")
         let modified = expectation(description: "request should be modified")
         var response: AFDataResponse<Data?>?
 
         // When
-        AF.request(.delay(1)) { $0.timeoutInterval = 0.01; modified.fulfill() }
+        session.request(.delay(1)) { $0.timeoutInterval = 0.001; modified.fulfill() }
             .response { response = $0; completed.fulfill() }
 
         waitForExpectations(timeout: timeout)
@@ -44,6 +46,7 @@ final class RequestModifierTests: BaseTestCase {
         XCTAssertEqual((response?.error?.underlyingError as? URLError)?.code, .timedOut)
     }
 
+    @MainActor
     func testThatDataRequestsCallRequestModifiersOnRetry() {
         // Given
         let inspector = InspectorInterceptor(RetryPolicy(retryLimit: 1, exponentialBackoffScale: 0))
@@ -54,7 +57,7 @@ final class RequestModifierTests: BaseTestCase {
         var response: AFDataResponse<Data?>?
 
         // When
-        session.request(.delay(1)) { $0.timeoutInterval = 0.01; modified.fulfill() }
+        session.request(.delay(1)) { $0.timeoutInterval = 0.001; modified.fulfill() }
             .response { response = $0; completed.fulfill() }
 
         waitForExpectations(timeout: timeout)
@@ -66,8 +69,10 @@ final class RequestModifierTests: BaseTestCase {
 
     // MARK: - UploadRequest
 
+    @MainActor
     func testThatUploadRequestsCanHaveCustomTimeoutValueSet() {
         // Given
+        let session = stored(Session())
         let endpoint = Endpoint.delay(1).modifying(\.method, to: .post)
         let data = Data("data".utf8)
         let completed = expectation(description: "request completed")
@@ -75,7 +80,7 @@ final class RequestModifierTests: BaseTestCase {
         var response: AFDataResponse<Data?>?
 
         // When
-        AF.upload(data, to: endpoint) { $0.timeoutInterval = 0.01; modified.fulfill() }
+        session.upload(data, to: endpoint) { $0.timeoutInterval = 0.001; modified.fulfill() }
             .response { response = $0; completed.fulfill() }
 
         waitForExpectations(timeout: timeout)
@@ -84,6 +89,7 @@ final class RequestModifierTests: BaseTestCase {
         XCTAssertEqual((response?.error?.underlyingError as? URLError)?.code, .timedOut)
     }
 
+    @MainActor
     func testThatUploadRequestsCallRequestModifiersOnRetry() {
         // Given
         let endpoint = Endpoint.delay(1).modifying(\.method, to: .post)
@@ -97,7 +103,7 @@ final class RequestModifierTests: BaseTestCase {
         var response: AFDataResponse<Data?>?
 
         // When
-        session.upload(data, to: endpoint) { $0.timeoutInterval = 0.01; modified.fulfill() }
+        session.upload(data, to: endpoint) { $0.timeoutInterval = 0.001; modified.fulfill() }
             .response { response = $0; completed.fulfill() }
 
         waitForExpectations(timeout: timeout)
@@ -109,15 +115,17 @@ final class RequestModifierTests: BaseTestCase {
 
     // MARK: - DownloadRequest
 
+    @MainActor
     func testThatDownloadRequestsCanHaveCustomTimeoutValueSet() {
         // Given
+        let session = stored(Session())
         let url = Endpoint.delay(1).url
         let completed = expectation(description: "request completed")
         let modified = expectation(description: "request should be modified")
         var response: AFDownloadResponse<URL?>?
 
         // When
-        AF.download(url, requestModifier: { $0.timeoutInterval = 0.01; modified.fulfill() })
+        session.download(url, requestModifier: { $0.timeoutInterval = 0.001; modified.fulfill() })
             .response { response = $0; completed.fulfill() }
 
         waitForExpectations(timeout: timeout)
@@ -126,6 +134,7 @@ final class RequestModifierTests: BaseTestCase {
         XCTAssertEqual((response?.error?.underlyingError as? URLError)?.code, .timedOut)
     }
 
+    @MainActor
     func testThatDownloadRequestsCallRequestModifiersOnRetry() {
         // Given
         let inspector = InspectorInterceptor(RetryPolicy(retryLimit: 1, exponentialBackoffScale: 0))
@@ -136,7 +145,7 @@ final class RequestModifierTests: BaseTestCase {
         var response: AFDownloadResponse<URL?>?
 
         // When
-        session.download(.delay(1), requestModifier: { $0.timeoutInterval = 0.01; modified.fulfill() })
+        session.download(.delay(1), requestModifier: { $0.timeoutInterval = 0.001; modified.fulfill() })
             .response { response = $0; completed.fulfill() }
 
         waitForExpectations(timeout: timeout)
@@ -148,14 +157,16 @@ final class RequestModifierTests: BaseTestCase {
 
     // MARK: - DataStreamRequest
 
+    @MainActor
     func testThatDataStreamRequestsCanHaveCustomTimeoutValueSet() {
         // Given
+        let session = stored(Session())
         let completed = expectation(description: "request completed")
         let modified = expectation(description: "request should be modified")
         var response: DataStreamRequest.Completion?
 
         // When
-        AF.streamRequest(.delay(1)) { $0.timeoutInterval = 0.01; modified.fulfill() }
+        session.streamRequest(.delay(1)) { $0.timeoutInterval = 0.001; modified.fulfill() }
             .responseStream { stream in
                 guard case let .complete(completion) = stream.event else { return }
 
@@ -169,6 +180,7 @@ final class RequestModifierTests: BaseTestCase {
         XCTAssertEqual((response?.error?.underlyingError as? URLError)?.code, .timedOut)
     }
 
+    @MainActor
     func testThatDataStreamRequestsCallRequestModifiersOnRetry() {
         // Given
         let inspector = InspectorInterceptor(RetryPolicy(retryLimit: 1, exponentialBackoffScale: 0))
@@ -179,7 +191,7 @@ final class RequestModifierTests: BaseTestCase {
         var response: DataStreamRequest.Completion?
 
         // When
-        session.streamRequest(.delay(1)) { $0.timeoutInterval = 0.01; modified.fulfill() }
+        session.streamRequest(.delay(1)) { $0.timeoutInterval = 0.001; modified.fulfill() }
             .responseStream { stream in
                 guard case let .complete(completion) = stream.event else { return }
 

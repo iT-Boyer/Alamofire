@@ -1,16 +1,11 @@
 # file options
 
 --symlinks ignore
---swiftversion 5.1
-
-# rules
---enable isEmpty
---disable andOperator
---disable wrapMultilineStatementBraces
+--swiftversion 6.0
+--language-mode 5
 
 # format options
 
---closingparen same-line
 --commas inline
 --comments indent
 --decimalgrouping 3,5
@@ -18,12 +13,29 @@
 --exponentgrouping disabled
 --extensionacl on-declarations
 --fractiongrouping disabled
---ifdef no-indent
+--ifdef preserve
 --importgrouping testable-top
 --operatorfunc no-space
 --nospaceoperators ..<, ...
 --selfrequired validate
+--someAny false
 --stripunusedargs closure-only
---wraparguments after-first
---wrapcollections after-first
---wrapparameters after-first
+--wraparguments preserve
+--wrapcollections preserve
+--wrapparameters preserve
+
+# rules
+
+--enable isEmpty
+--disable andOperator
+--disable docComments
+--disable noForceTryInTests
+--disable noForceUnwrapInTests
+--disable opaqueGenericParameters
+--disable redundantSwiftTestingSuite
+--disable simplifyGenericConstraints
+--disable wrapFunctionBodies
+--disable wrapIfExpressionBodies
+--disable wrapIfStatementBodies
+--disable wrapMultilineStatementBraces
+--disable wrapPropertyBodies
